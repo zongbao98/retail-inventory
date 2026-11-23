@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import type { ActionState } from "./actions";
+import { Icon } from "./Icon";
 
 type Props = {
   action: (s: ActionState, f: FormData) => Promise<ActionState>;
@@ -31,10 +32,17 @@ export function ActionForm({ action, submit, children, className = "card", reset
     // key change remounts the form (and children's state) so inputs clear after each successful save
     <form key={resetOnSuccess ? state.at : undefined} action={formAction} className={className}>
       {children}
-      <button disabled={pending}>{pending ? "Saving…" : submit}</button>
-      <p className={`msg ${state.error ? "error" : "ok"}`} role="status">
-        {show && (state.error ?? state.ok)}
-      </p>
+      <div className="form-actions">
+        <button disabled={pending}>{pending ? "Saving…" : submit}</button>
+        <p className={`msg ${state.error ? "error" : "ok"}`} role="status">
+          {show && (state.error || state.ok) && (
+            <>
+              <Icon name={state.error ? "circle-alert" : "circle-check"} />
+              {state.error ?? state.ok}
+            </>
+          )}
+        </p>
+      </div>
     </form>
   );
 }

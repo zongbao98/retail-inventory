@@ -1,5 +1,7 @@
 "use client";
 
+import { Icon } from "./Icon";
+
 export function ThemeToggle() {
   function toggle() {
     const html = document.documentElement;
@@ -7,9 +9,11 @@ export function ThemeToggle() {
     html.dataset.theme = dark ? "light" : "dark";
     localStorage.setItem("theme", html.dataset.theme);
   }
+  // Both glyphs render; CSS shows the one for the theme you'd switch to.
   return (
-    <button type="button" className="theme" onClick={toggle} aria-label="Toggle dark mode">
-      ◐ Theme
+    <button type="button" className="theme" onClick={toggle} aria-label="Switch light or dark mode">
+      <Icon name="moon" className="to-dark" />
+      <Icon name="sun" className="to-light" />
     </button>
   );
 }

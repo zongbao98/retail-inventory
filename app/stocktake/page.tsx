@@ -8,7 +8,7 @@ export default async function Stocktake() {
   return (
     <>
       <h1>Stock-take</h1>
-      <p>Enter the counted quantity for each item. Leave blank to skip. Posting writes one adjustment per non-zero variance.</p>
+      <p className="lead">Type what you counted on the shelf. Leave an item blank to skip it. When you post, each difference is saved as an adjustment and stock matches your count.</p>
       <StocktakeForm products={data as Pick<ProductStock, "id" | "sku" | "name" | "cost" | "stock">[]} />
     </>
   );

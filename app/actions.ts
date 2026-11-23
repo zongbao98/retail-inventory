@@ -20,7 +20,10 @@ async function run(prev: ActionState, fn: () => Promise<string>): Promise<Action
 
 // Supabase returns data=null only alongside an error (or for inserts without .select(), whose result we ignore).
 function check<T>(res: { data: T; error: { message: string; code?: string } | null }): NonNullable<T> {
-  if (res.error) throw new Error(res.error.code === "23505" ? "That SKU already exists" : res.error.message);
+  if (res.error) {
+    const friendly: Record<string, string> = { "23505": "That SKU already exists", PGRST116: "That product no longer exists" };
+    throw new Error(friendly[res.error.code ?? ""] ?? res.error.message);
+  }
   return res.data as NonNullable<T>;
 }
 
@@ -50,7 +53,12 @@ export async function saveProduct(prev: ActionState, f: FormData): Promise<Actio
     const created = check(await (await db()).from("products").insert(row).select("id").single());
     const opening = parseQty(f.get("opening_stock"), "Opening stock");
     if (opening) {
-      check(await (await db()).from("movements").insert({ product_id: created.id, type: "adjustment", qty: opening, note: "opening stock" }));
+      const res = await (await db()).from("movements").insert({ product_id: created.id, type: "adjustment", qty: opening, note: "opening stock" });
+      if (res.error) {
+        // Undo the product so a retry doesn't hit "SKU already exists" with no stock recorded.
+        await (await db()).from("products").delete().eq("id", created.id);
+        check(res);
+      }
     }
     return `Added ${sku}`;
   });

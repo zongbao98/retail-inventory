@@ -24,6 +24,7 @@ function CountTable({ products }: { products: P[] }) {
   const cls = (n: number) => (n > 0 ? "pos" : n < 0 ? "neg" : "");
 
   return (
+    <div className="table-wrap">
       <table>
         <thead>
           <tr><th>SKU</th><th>Name</th><th className="num">System qty</th><th className="num">Counted</th><th className="num">Variance</th><th className="num">Variance value</th></tr>
@@ -33,7 +34,7 @@ function CountTable({ products }: { products: P[] }) {
             const d = v(p);
             return (
               <tr key={p.id}>
-                <td>{p.sku}</td><td>{p.name}</td><td className="num">{p.stock}</td>
+                <td>{p.sku}</td><td className="name">{p.name}</td><td className="num">{p.stock}</td>
                 <td className="num">
                   <input className="count" name={`count_${p.id}`} type="number" min="0" step="1" aria-label={`Counted ${p.sku}`}
                     value={counts[p.id] ?? ""} onChange={(e) => setCounts({ ...counts, [p.id]: e.target.value })} />
@@ -48,5 +49,6 @@ function CountTable({ products }: { products: P[] }) {
           <tr><th colSpan={4}>Total</th><th className={`num ${cls(totalUnits)}`}>{totalUnits}</th><th className={`num ${cls(totalValue)}`}>{money(totalValue)}</th></tr>
         </tfoot>
       </table>
+    </div>
   );
 }
