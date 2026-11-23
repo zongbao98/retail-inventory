@@ -4,16 +4,17 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { parseQty, variance, type ProductStock } from "@/lib/inventory";
 
-export type ActionState = { ok?: string; error?: string };
+// at: changes only on success; the form uses it as a key to clear itself.
+export type ActionState = { ok?: string; error?: string; at?: number };
 
 // shortcut: no login — anyone who can reach the app can write. Add Supabase Auth before exposing it publicly.
-async function run(fn: () => Promise<string>): Promise<ActionState> {
+async function run(prev: ActionState, fn: () => Promise<string>): Promise<ActionState> {
   try {
     const ok = await fn();
     revalidatePath("/", "layout");
-    return { ok };
+    return { ok, at: Date.now() };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : String(e) };
+    return { error: e instanceof Error ? e.message : String(e), at: prev.at };
   }
 }
 
@@ -29,8 +30,8 @@ function price(raw: FormDataEntryValue | null, label: string): number {
   return Math.round(n * 100) / 100;
 }
 
-export async function saveProduct(_: ActionState, f: FormData): Promise<ActionState> {
-  return run(async () => {
+export async function saveProduct(prev: ActionState, f: FormData): Promise<ActionState> {
+  return run(prev, async () => {
     const sku = String(f.get("sku") ?? "").trim();
     const name = String(f.get("name") ?? "").trim();
     if (!sku || !name) throw new Error("SKU and name are required");
@@ -55,8 +56,8 @@ export async function saveProduct(_: ActionState, f: FormData): Promise<ActionSt
   });
 }
 
-export async function logMovement(_: ActionState, f: FormData): Promise<ActionState> {
-  return run(async () => {
+export async function logMovement(prev: ActionState, f: FormData): Promise<ActionState> {
+  return run(prev, async () => {
     const product_id = parseQty(f.get("product_id"), "Product", 1);
     const type = String(f.get("type"));
     if (!product_id) throw new Error("Pick a product");
@@ -78,8 +79,8 @@ export async function logMovement(_: ActionState, f: FormData): Promise<ActionSt
   });
 }
 
-export async function postStocktake(_: ActionState, f: FormData): Promise<ActionState> {
-  return run(async () => {
+export async function postStocktake(prev: ActionState, f: FormData): Promise<ActionState> {
+  return run(prev, async () => {
     // Recompute against current stock on the server; the page's numbers may be stale.
     const products = check(await (await db()).from("product_stock").select("id,sku,stock")) as Pick<ProductStock, "id" | "sku" | "stock">[];
     const rows = [];

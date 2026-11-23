@@ -1,24 +1,43 @@
+/* Follows the OS theme; the nav toggle pins it via <html data-theme>. */
+:root { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+:root {
+  --bg: light-dark(#f6f7f9, #0f1115);
+  --fg: light-dark(#1a1a1a, #e5e7eb);
+  --surface: light-dark(#fff, #181b21);
+  --head: light-dark(#f3f4f6, #222630);
+  --border: light-dark(#e5e7eb, #2e333d);
+  --input-border: light-dark(#9ca3af, #4b5563);
+  --low-bg: light-dark(#fef2f2, #3a1618);
+  --red: light-dark(#b91c1c, #f87171);
+  --green: light-dark(#047857, #34d399);
+  --link: light-dark(#1d4ed8, #93c5fd);
+}
+
 * { box-sizing: border-box; }
-body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: #1a1a1a; background: #f6f7f9; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+a { color: var(--link); }
 nav { display: flex; gap: 1.25rem; align-items: center; padding: .75rem 1.5rem; background: #1f2937; }
 nav strong { color: #fff; margin-right: 1rem; }
 nav a { color: #d1d5db; text-decoration: none; }
 nav a:hover, nav a:focus-visible { color: #fff; text-decoration: underline; }
+nav .theme { margin-left: auto; background: transparent; border: 1px solid #4b5563; color: #d1d5db; }
 main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
 h1 { font-size: 1.4rem; margin: 0 0 1rem; }
-table { width: 100%; border-collapse: collapse; background: #fff; margin-bottom: 1.5rem; }
-th, td { padding: .5rem .75rem; border-bottom: 1px solid #e5e7eb; text-align: left; }
-th { background: #f3f4f6; font-weight: 600; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); margin-bottom: 1.5rem; }
+th, td { padding: .5rem .75rem; border-bottom: 1px solid var(--border); text-align: left; }
+th { background: var(--head); font-weight: 600; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-tr.low td { background: #fef2f2; }
+tr.low td { background: var(--low-bg); }
 tr.low td:first-child { border-left: 4px solid #dc2626; }
 .badge { background: #dc2626; color: #fff; border-radius: 4px; padding: 0 .4rem; font-size: .8rem; }
-.pos { color: #047857; } .neg { color: #b91c1c; }
-form.card { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; background: #fff; padding: 1rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; }
+.pos { color: var(--green); } .neg { color: var(--red); }
+form.card { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; background: var(--surface); padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
 label { display: flex; flex-direction: column; font-size: .85rem; gap: .2rem; }
-input, select { font: inherit; padding: .35rem .5rem; border: 1px solid #9ca3af; border-radius: 4px; }
+input, select { font: inherit; color: inherit; background: var(--surface); padding: .35rem .5rem; border: 1px solid var(--input-border); border-radius: 4px; }
 input.count { width: 6rem; text-align: right; }
 button { font: inherit; padding: .4rem 1rem; border: 0; border-radius: 4px; background: #2563eb; color: #fff; cursor: pointer; }
 button:disabled { opacity: .6; }
 .msg { width: 100%; margin: 0; }
-.msg.ok { color: #047857; } .msg.error { color: #b91c1c; }
+.msg.ok { color: var(--green); } .msg.error { color: var(--red); }

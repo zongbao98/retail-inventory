@@ -8,6 +8,15 @@ import { postStocktake } from "../actions";
 type P = Pick<ProductStock, "id" | "sku" | "name" | "cost" | "stock">;
 
 export function StocktakeForm({ products }: { products: P[] }) {
+  return (
+    <ActionForm action={postStocktake} submit="Post adjustments" className="">
+      <CountTable products={products} />
+    </ActionForm>
+  );
+}
+
+// Lives inside the form so its counts reset when the form remounts after a successful post.
+function CountTable({ products }: { products: P[] }) {
   const [counts, setCounts] = useState<Record<number, string>>({});
   const v = (p: P) => (counts[p.id]?.trim() && Number.isInteger(Number(counts[p.id])) ? variance(Number(counts[p.id]), p.stock) : null);
   const totalUnits = products.reduce((s, p) => s + (v(p) ?? 0), 0);
@@ -15,7 +24,6 @@ export function StocktakeForm({ products }: { products: P[] }) {
   const cls = (n: number) => (n > 0 ? "pos" : n < 0 ? "neg" : "");
 
   return (
-    <ActionForm action={postStocktake} submit="Post adjustments" className="">
       <table>
         <thead>
           <tr><th>SKU</th><th>Name</th><th className="num">System qty</th><th className="num">Counted</th><th className="num">Variance</th><th className="num">Variance value</th></tr>
@@ -40,6 +48,5 @@ export function StocktakeForm({ products }: { products: P[] }) {
           <tr><th colSpan={4}>Total</th><th className={`num ${cls(totalUnits)}`}>{totalUnits}</th><th className={`num ${cls(totalValue)}`}>{money(totalValue)}</th></tr>
         </tfoot>
       </table>
-    </ActionForm>
   );
 }

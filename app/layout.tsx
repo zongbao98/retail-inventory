@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import "./globals.css";
+import { ThemeToggle } from "./ThemeToggle";
 
 export const metadata: Metadata = {
   title: "Retail Inventory",
@@ -10,7 +11,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the script below sets data-theme before React hydrates
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* apply the saved theme before first paint, so dark mode doesn't flash light */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}` }} />
+      </head>
       <body>
         <nav>
           <strong>Retail Inventory</strong>
@@ -18,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/products">Products</Link>
           <Link href="/movements">Movements</Link>
           <Link href="/stocktake">Stock-take</Link>
+          <ThemeToggle />
         </nav>
         <main>
           {/* pages read live stock at request time; the nav shell renders statically */}
