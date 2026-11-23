@@ -1,10 +1,21 @@
 import { db } from "@/lib/db";
 import { isLow, money, suggestOrder, type ProductStock } from "@/lib/inventory";
 import { Icon } from "./Icon";
+import { SalesChart } from "./SalesChart";
+import { StockChart } from "./StockChart";
+
+// Runs per request (db() awaits connection()), so reading the clock here is intended.
+const daysAgo = (n: number) => new Date(Date.now() - n * 864e5).toISOString();
 
 export default async function Dashboard() {
-  const { data, error } = await (await db()).from("product_stock").select("*").order("sku");
+  const sb = await db();
+  const since = daysAgo(31); // a day extra: the chart buckets by the viewer's local days
+  const [{ data, error }, sales] = await Promise.all([
+    sb.from("product_stock").select("*").order("sku"),
+    sb.from("movements").select("qty,created_at").eq("type", "sale").gte("created_at", since),
+  ]);
   if (error) throw new Error(error.message);
+  if (sales.error) throw new Error(sales.error.message);
   const rows = (data as ProductStock[]).sort((a, b) => Number(isLow(b)) - Number(isLow(a)));
   const low = rows.filter(isLow);
   const stockValue = rows.reduce((s, p) => s + p.stock * Number(p.cost), 0);
@@ -12,11 +23,8 @@ export default async function Dashboard() {
 
   return (
     <>
-      <h1>Dashboard</h1>
-      <p className="lead">
-        Red rows are running low. For each one you get an order quantity that covers the next 30 days at last month&apos;s sales,
-        plus the reorder level as a buffer.
-      </p>
+      {/* the nav already says Dashboard; the heading stays for screen readers */}
+      <h1 className="sr-only">Dashboard</h1>
 
       <div className="stats">
         <div className={`stat ${low.length ? "stat--alert" : ""}`}>
@@ -31,6 +39,11 @@ export default async function Dashboard() {
           <div className="stat__label"><Icon name="package" />Stock value at cost</div>
           <div className="stat__value">{money(stockValue)}</div>
         </div>
+      </div>
+
+      <div className="charts">
+        <StockChart rows={rows} />
+        <SalesChart sales={sales.data} />
       </div>
 
       <div className="table-wrap">
@@ -63,6 +76,11 @@ export default async function Dashboard() {
           </tbody>
         </table>
       </div>
+
+      <p className="note">
+        Red rows are running low. For each one you get an order quantity that covers the next 30 days at last month&apos;s sales,
+        plus the reorder level as a buffer.
+      </p>
     </>
   );
 }
